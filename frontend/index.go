@@ -27,7 +27,7 @@ func init() {
 
 func main() {
 
-	spago.VerboseMode = true
+	// spago.VerboseMode = true
 
 	r := router.New()
 	r.Handle("/", func(key string) {

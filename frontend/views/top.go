@@ -37,6 +37,7 @@ type Top struct {
 
 	effector  *effects.OutlineEffect
 	character *mmdloaders.MMDAnimationHelper
+	ocean     *water.Ocean
 
 	renderFunction js.Func
 }
@@ -100,7 +101,7 @@ func (c *Top) initSceneAndRenderer() {
 		)
 		camera := cameras.NewPerspectiveCamera(fov, aspect, near, far)
 		camera.Position().SetY(10)
-		camera.Position().SetZ(40)
+		camera.Position().SetZ(50)
 		camera.Up().SetZ(1)
 		camera.LookAtXYZ(0, 0, 0)
 		c.camera = camera
@@ -121,7 +122,12 @@ func (c *Top) initSceneAndRenderer() {
 	// Control
 	{
 		control := controls.NewOrbitControls(c.camera, c.renderer.DomElement())
-		control.Target().Set2(0, 10, 0)
+		control.Target().Set2(0, 15, 0)
+		control.SetEnablePan(false)
+		control.SetMaxDistance(60)
+		control.SetMinDistance(15)
+		control.SetMaxPolarAngle(math.Pi * 0.6)
+
 		control.Update()
 		control.SaveState()
 
@@ -167,6 +173,7 @@ func (c *Top) initSceneAndRenderer() {
 		ocean.Rotation().SetX(-math.Pi / 2)
 		ocean.Position().SetY(1)
 
+		c.ocean = ocean
 		c.scene.Add(ocean)
 	}
 
@@ -271,8 +278,8 @@ func (c *Top) initSceneAndRenderer() {
 		// cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
 		// scene.Add(cameraHelper)
 
-		helper := lights.NewDirectionalLightHelper(light)
-		c.scene.Add(helper)
+		// helper := lights.NewDirectionalLightHelper(light)
+		// c.scene.Add(helper)
 	}
 
 }
@@ -323,6 +330,7 @@ func (c *Top) render(this js.Value, args []js.Value) interface{} {
 	// Update time and animation
 	delta := c.clock.Delta()
 	c.character.Update(delta)
+	c.ocean.SetTime(c.ocean.Time() + delta)
 
 	// Render
 	// c.effector.Render(c.scene, c.camera)

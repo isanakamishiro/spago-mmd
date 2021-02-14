@@ -47,6 +47,12 @@ func NewOcean(width float64, height float64, options ...OceanOption) *Ocean {
 	return w
 }
 
+// Time gets the time for ocean status.
+func (c *Ocean) Time() float64 {
+	obj := c.JSValue().Get("material").Get("uniforms")
+	return obj.Get("time").Get("value").Float()
+}
+
 // SetTime sets the time for ocean status.
 func (c *Ocean) SetTime(v float64) {
 	obj := c.JSValue().Get("material").Get("uniforms")

@@ -1,0 +1,21 @@
+runtime: go114
+
+instance_class: F1
+
+handlers:
+- url: /
+  static_files: dist/index.html
+  upload: dist/index.html
+  secure: always
+
+- url: /(.*)
+  static_files: dist/\1
+  upload: dist/(.*)
+  secure: always
+
+automatic_scaling:
+  min_idle_instances: automatic
+  max_idle_instances: 1
+  min_pending_latency: 3000ms
+  max_pending_latency: automatic
+  max_instances: 2

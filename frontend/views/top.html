@@ -1,0 +1,29 @@
+<import>app/frontend/components</import>
+
+<body>
+    <section class="hero is-info is-fullheight">
+        <!-- Hero header -->
+        <div class="hero-head">
+            <raw>spago.C(&components.Header{})</raw>
+        </div>
+
+        <!-- Hero body -->
+        <div class="hero-body p-0">
+            <!-- Threejs Canvas -->
+            <canvas id="cv" width="{{c.canvasWidth}}" height="{{c.canvasHeight}}" style="width: 100%;"></canvas>
+        </div>
+
+        <!-- Hero footer -->
+        <div class="hero-foot">
+            <nav class="tabs is-boxed is-fullwidth">
+                <div class="container">
+                    <ul>
+                        <li><a @click="{{c.refresh}}">DOM Refresh</a></li>
+                        <li><a @click="{{c.resetCameraPosition}}">Reset Camera Pos</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+
+    </section>
+</body>

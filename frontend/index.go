@@ -3,6 +3,7 @@ package main
 import (
 	"app/frontend/actions"
 	"app/frontend/views"
+	"log"
 	"syscall/js"
 
 	"github.com/nobonobo/spago"
@@ -18,7 +19,13 @@ var (
 
 func init() {
 	dispatcher.Register(actions.Refresh, func(args ...interface{}) {
+		log.Println("Refresh.")
 		spago.Rerender(currentView)
+	})
+
+	dispatcher.Register(actions.ChangeModel, func(args ...interface{}) {
+		log.Println("Change Model.")
+		topView.ReloadModel()
 	})
 
 	loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")

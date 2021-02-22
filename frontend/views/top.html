@@ -1,10 +1,8 @@
-<import>app/frontend/components</import>
-
 <body>
-    <section class="hero is-info is-fullheight">
+    <section class="hero is-fullheight">
         <!-- Hero header -->
         <div class="hero-head">
-            <raw>spago.C(&components.Header{})</raw>
+            <raw>spago.C(c.header)</raw>
         </div>
 
         <!-- Hero body -->
@@ -15,7 +13,7 @@
 
         <!-- Hero footer -->
         <div class="hero-foot">
-            <nav class="tabs is-boxed is-fullwidth">
+            <nav class="tabs">
                 <div class="container">
                     <ul>
                         <li><a @click="{{c.refresh}}">DOM Refresh</a></li>

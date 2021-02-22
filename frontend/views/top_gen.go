@@ -1,7 +1,6 @@
 package views
 
 import (
-	"app/frontend/components"
 	"github.com/nobonobo/spago"
 )
 
@@ -9,10 +8,10 @@ import (
 func (c *Top) Render() spago.HTML {
 	return spago.Tag("body", 
 		spago.Tag("section", 			
-			spago.A("class", spago.S(`hero is-info is-fullheight`)),
+			spago.A("class", spago.S(`hero is-fullheight`)),
 			spago.Tag("div", 				
 				spago.A("class", spago.S(`hero-head`)),
-				spago.C(&components.Header{}),
+				spago.C(c.header),
 			),
 			spago.Tag("div", 				
 				spago.A("class", spago.S(`hero-body p-0`)),
@@ -26,7 +25,7 @@ func (c *Top) Render() spago.HTML {
 			spago.Tag("div", 				
 				spago.A("class", spago.S(`hero-foot`)),
 				spago.Tag("nav", 					
-					spago.A("class", spago.S(`tabs is-boxed is-fullwidth`)),
+					spago.A("class", spago.S(`tabs`)),
 					spago.Tag("div", 						
 						spago.A("class", spago.S(`container`)),
 						spago.Tag("ul", 

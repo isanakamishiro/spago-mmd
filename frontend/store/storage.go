@@ -1,5 +1,6 @@
 package store
 
+// RendererInfo is ...
 type RendererInfo struct {
 	MemoryGeometries string
 	MemoryTextures   string
@@ -13,6 +14,7 @@ type RendererInfo struct {
 
 var rendererInfo *RendererInfo = &RendererInfo{}
 
+// GetRendererInfo is ...
 func GetRendererInfo() *RendererInfo {
 	return rendererInfo
 }

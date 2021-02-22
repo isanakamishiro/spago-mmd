@@ -2,6 +2,8 @@ package views
 
 import (
 	"app/frontend/actions"
+	"app/frontend/components"
+	"app/frontend/store"
 	"app/lib/threejs"
 	"app/lib/threejs/cameras"
 	"app/lib/threejs/controls"
@@ -24,6 +26,8 @@ import (
 type Top struct {
 	spago.Core
 
+	header *components.Header
+
 	canvasWidth  int
 	canvasHeight int
 
@@ -35,9 +39,10 @@ type Top struct {
 	control  controls.OrbitControls
 	clock    threejs.Clock
 
-	effector  *effects.OutlineEffect
-	character *mmdloaders.MMDAnimationHelper
-	ocean     *water.Ocean
+	effector      *effects.OutlineEffect
+	animator      *mmdloaders.MMDAnimationHelper
+	characterMesh mmdloaders.MMDMesh
+	ocean         *water.Ocean
 
 	renderFunction js.Func
 }
@@ -49,9 +54,70 @@ func NewTop() *Top {
 		init:         false,
 		canvasWidth:  0,
 		canvasHeight: 0,
+		header:       components.NewHeader(),
 	}
 
 	return top
+}
+
+// ReloadModel is ...
+func (c *Top) ReloadModel() {
+
+	// Character
+	{
+		// c.effector = effects.NewOutlineEffect(c.renderer)
+
+		c.scene.Remove(c.characterMesh)
+
+		mmdHelper := mmdloaders.NewMMDAnimationHelper(map[string]interface{}{
+			"afterglow": 2.0,
+		})
+		c.animator = mmdHelper
+
+		var fn js.Func
+		fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+			defer fn.Release()
+
+			// model
+			modelFile := store.CurrentModel.Path()
+			vmdFiles := []string{store.CurrentMotion.Path()}
+			// cameraFiles := []string{"./assets/models/mmd/vmds/wavefile_camera.vmd"}
+
+			mmdLoader := mmdloaders.NewMMDLoader()
+			mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
+
+				mesh.SetCastShadow(true)
+				// mesh.SetReceiveShadow(true)
+
+				mmdHelper.Add(mesh, map[string]interface{}{
+					"animation": animation.JSValue(),
+					"physics":   true,
+				})
+
+				c.scene.AddMesh(mesh)
+				c.characterMesh = mesh
+
+				// mmdLoader.LoadCameraAnimation(cameraFiles, c.camera, func(cameraAnimation mmdloaders.MMDAnimation) {
+				// 	mmdHelper.Add(c.camera, map[string]interface{}{
+				// 		"animation": cameraAnimation,
+				// 	})
+
+				// }, nil, nil)
+
+			}, nil, nil)
+
+			return nil
+
+		})
+
+		// Ammo functionが呼ばれていない状態 = Function, コール後、Object
+		if js.Global().Get("Ammo").Type() == js.TypeFunction {
+			js.Global().Call("Ammo").Call("then", fn)
+		} else {
+			fn.Invoke()
+		}
+
+	}
 }
 
 // Mount is ...
@@ -195,51 +261,6 @@ func (c *Top) initSceneAndRenderer() {
 		c.scene.Add(ball)
 	}
 
-	// Character
-	{
-		c.effector = effects.NewOutlineEffect(c.renderer)
-
-		mmdHelper := mmdloaders.NewMMDAnimationHelper(map[string]interface{}{
-			"afterglow": 2.0,
-		})
-		c.character = mmdHelper
-
-		var fn js.Func
-		fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-			defer fn.Release()
-
-			// model
-			// modelFile := "./assets/models/mmd/miku/miku_v2.pmd"
-			modelFile := "./assets/models/mmd/lisa/lisa.pmx"
-			vmdFiles := []string{"./assets/models/mmd/vmds/wavefile_v2.vmd"}
-
-			mmdLoader := mmdloaders.NewMMDLoader()
-			mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
-
-				mesh.SetCastShadow(true)
-				// mesh.SetReceiveShadow(true)
-
-				c.scene.AddMesh(mesh)
-				mmdHelper.Add(mesh, map[string]interface{}{
-					"animation": animation.JSValue(),
-					"physics":   true,
-				})
-
-			}, nil, nil)
-
-			return nil
-
-		})
-
-		// Ammo functionが呼ばれていない状態 = Function, コール後、Object
-		if js.Global().Get("Ammo").Type() == js.TypeFunction {
-			js.Global().Call("Ammo").Call("then", fn)
-		} else {
-			fn.Invoke()
-		}
-
-	}
-
 	// Light
 
 	// HemisphereLight
@@ -281,6 +302,9 @@ func (c *Top) initSceneAndRenderer() {
 		// helper := lights.NewDirectionalLightHelper(light)
 		// c.scene.Add(helper)
 	}
+
+	// Change Model
+	dispatcher.Dispatch(actions.ChangeModel)
 
 }
 
@@ -329,7 +353,7 @@ func (c *Top) render(this js.Value, args []js.Value) interface{} {
 
 	// Update time and animation
 	delta := c.clock.Delta()
-	c.character.Update(delta)
+	c.animator.Update(delta)
 	c.ocean.SetTime(c.ocean.Time() + delta)
 
 	// Render

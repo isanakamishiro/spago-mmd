@@ -11,24 +11,64 @@
                 </span>
             </a>
 
-            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click={{c.toggleMenu}}>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
             </a>
         </div>
 
-        <div id="navbarMenuHero" class="navbar-menu">
+        <div id="navbarMenuHero" class="navbar-menu {{c.isActive}}">
             <div class="navbar-start">
-                <a class="navbar-item">
+                <!-- <a class="navbar-item">
                     Home
                 </a>
 
                 <a class="navbar-item">
                     Documentation
-                </a>
+                </a> -->
 
             </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        Model
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" @click={{c.changeModelToDiluc}}>
+                            Diluc
+                        </a>
+                        <a class="navbar-item" @click={{c.changeModelToLisa}}>
+                            Lisa
+                        </a>
+                        <a class="navbar-item" @click={{c.changeModelToMiku}}>
+                            Miku
+                        </a>
+                    </div>
+                </div>
+
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        Motion
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" @click={{c.changeMotionToDance1}}>
+                            Dance1
+                        </a>
+                        <a class="navbar-item" @click={{c.changeMotionToDance2}}>
+                            Dance2
+                        </a>
+                        <a class="navbar-item" @click={{c.changeMotionToDance3}}>
+                            Dance3
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </header>

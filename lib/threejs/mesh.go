@@ -1,6 +1,7 @@
 package threejs
 
 import (
+	"errors"
 	"syscall/js"
 )
 
@@ -12,12 +13,15 @@ type Mesh interface {
 	// Geometry gets an instance of Geometry or BufferGeometry (or derived classes),
 	// defining the object's structure.
 	// It's recommended to always use a BufferGeometry if possible for best performance.
-	Geometry() Geometry
+	Geometry() (BufferGeometry, error)
 
-	// Material gets an instance of material derived from the Material base class
+	// Materials gets an instance of material derived from the Materials base class
 	// or an array of materials, defining the object's appearance.
 	// Default is a MeshBasicMaterial.
-	Material() Material
+	Materials() ([]Material, error)
+
+	// DisposeAll dispose all geometry, material, textures for this mesh.
+	DisposeAll()
 }
 
 // MeshImpl extend: [Object3D]
@@ -26,14 +30,14 @@ type meshImpl struct {
 }
 
 // NewMesh is factory method for MeshImpl.
-func NewMesh(geometry Geometry, material Material) Mesh {
+func NewMesh(geometry BufferGeometry, material Material) Mesh {
 	return &meshImpl{
 		NewObject3DFromJSValue(GetJsObject("Mesh").New(geometry.JSValue(), material.JSValue())),
 	}
 }
 
 // NewMeshWithMultiMaterial is factory method for MeshImpl.
-func NewMeshWithMultiMaterial(geometry Geometry, materialSlice []Material) Mesh {
+func NewMeshWithMultiMaterial(geometry BufferGeometry, materialSlice []Material) Mesh {
 
 	var a []interface{} = make([]interface{}, len(materialSlice))
 	for i, v := range materialSlice {
@@ -52,14 +56,78 @@ func NewMeshFromJSValue(value js.Value) Mesh {
 	}
 }
 
-func (c *meshImpl) Geometry() Geometry {
-	return NewDefaultGeometryFromJSValue(
-		c.JSValue().Get("geometry"),
-	)
+func (c *meshImpl) Geometry() (BufferGeometry, error) {
+
+	geom := c.JSValue().Get("geometry")
+	if geom.IsUndefined() || geom.IsNull() {
+		return nil, errors.New("geometry is null or undefined")
+	}
+	return NewDefaultBufferGeometryFromJSValue(geom), nil
 }
 
-func (c *meshImpl) Material() Material {
-	return NewDefaultMaterialFromJSValue(
-		c.JSValue().Get("material"),
-	)
+func (c *meshImpl) Materials() ([]Material, error) {
+
+	mat := c.JSValue().Get("material")
+	if mat.IsUndefined() || mat.IsNull() {
+		return nil, errors.New("material is null or undefined")
+	}
+
+	// Not array
+	length := mat.Length()
+	if length == 0 {
+		return []Material{NewDefaultMaterialFromJSValue(mat)}, nil
+	}
+
+	var mats []Material = make([]Material, length)
+	for i := 0; i < length; i++ {
+		mats[i] = NewDefaultMaterialFromJSValue(mat.Index(i))
+	}
+	return mats, nil
+
+}
+
+func (c *meshImpl) DisposeAll() {
+
+	// Dispose Geometry
+	if g, err := c.Geometry(); err == nil {
+		g.Dispose()
+	}
+	// Dispose Material/Texture
+	if m, err := c.Materials(); err == nil {
+		for _, v := range m {
+
+			// Dispose textures
+			if tx, err := v.Map(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.EnvMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.GradientMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.AlphaMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.AOMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.BumpMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.EmissiveMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.LightMap(); err == nil {
+				tx.Dispose()
+			}
+			if tx, err := v.NormalMap(); err == nil {
+				tx.Dispose()
+			}
+
+			// Dispose material
+			v.Dispose()
+		}
+	}
+
 }

@@ -13,17 +13,6 @@ type SpriteMaterialParameters interface {
 type SpriteMaterial interface {
 	threejs.Material
 
-	// The alpha map is a grayscale texture that controls the opacity across the surface
-	// (black: fully transparent; white: fully opaque). Default is null.
-	//
-	// Only the color of the texture is used, ignoring the alpha channel if one exists.
-	// For RGB and RGBA textures, the WebGL renderer will use the green channel when sampling this texture due to the extra bit of precision provided for green in DXT-compressed and uncompressed RGB 565 formats.
-	// Luminance-only and luminance/alpha textures will also still work as expected.
-	AlphaMap() threejs.Texture
-
-	// The texture map. Default is null.
-	Map() threejs.Texture
-
 	// Color of the material, by default set to white (0xffffff). The .map is mutiplied by the color.
 	Color() threejs.Color
 
@@ -64,17 +53,11 @@ func NewSpriteMaterialFromJSValue(v js.Value) SpriteMaterial {
 
 }
 
-func (c *spriteMaterialImp) AlphaMap() threejs.Texture {
-	return threejs.NewDefaultTextureFromJSValue(
-		c.JSValue().Get("alphaMap"),
-	)
-}
-
-func (c *spriteMaterialImp) Map() threejs.Texture {
-	return threejs.NewDefaultTextureFromJSValue(
-		c.JSValue().Get("map"),
-	)
-}
+// func (c *spriteMaterialImp) Map() threejs.Texture {
+// 	return threejs.NewDefaultTextureFromJSValue(
+// 		c.JSValue().Get("map"),
+// 	)
+// }
 
 func (c *spriteMaterialImp) Color() threejs.Color {
 	return threejs.NewColorFromJSValue(

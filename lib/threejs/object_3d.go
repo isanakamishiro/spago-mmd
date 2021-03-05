@@ -15,6 +15,9 @@ type Object3D interface {
 
 	JSValue() js.Value
 
+	// PrintConsole prints object info for debug.
+	PrintConsole()
+
 	Add(o Object3D)
 
 	ID() int
@@ -134,6 +137,10 @@ func NewObject3DFromJSValue(delegater js.Value) Object3D {
 // JSValue is ...
 func (od *defaultObject3D) JSValue() js.Value {
 	return od.Value
+}
+
+func (od *defaultObject3D) PrintConsole() {
+	js.Global().Get("console").Call("log", od.JSValue())
 }
 
 // Add adds object as child of this object.

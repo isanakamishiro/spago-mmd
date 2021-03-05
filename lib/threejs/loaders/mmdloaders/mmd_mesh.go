@@ -16,6 +16,6 @@ type mmdMeshImp struct {
 
 func newMMDMeshFromJSValue(v js.Value) MMDMesh {
 	return &mmdMeshImp{
-		Mesh: threejs.NewMeshFromJSValue(v),
+		Mesh: threejs.NewSkinnedMeshFromJSValue(v),
 	}
 }

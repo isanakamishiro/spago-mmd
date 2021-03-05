@@ -1,3 +1,5 @@
+<import>app/frontend/components</import>
+
 <body>
     <section class="hero is-fullheight">
         <!-- Hero header -->
@@ -8,6 +10,11 @@
         <!-- Hero body -->
         <div class="hero-body p-0">
             <!-- Threejs Canvas -->
+            <div class="container is-align-self-flex-start has-text-white is-size-7">
+                <div class="is-overlay" style="width: 200px;">
+                    <raw>spago.C(&components.RendererInfoPane{})</raw>
+                </div>
+            </div>
             <canvas id="cv" width="{{c.canvasWidth}}" height="{{c.canvasHeight}}" style="width: 100%;"></canvas>
         </div>
 
@@ -18,6 +25,7 @@
                     <ul>
                         <li><a @click="{{c.refresh}}">DOM Refresh</a></li>
                         <li><a @click="{{c.resetCameraPosition}}">Reset Camera Pos</a></li>
+                        <li><a @click="{{c.disposeModelEvent}}">Dispose Model</a></li>
                     </ul>
                 </div>
             </nav>

@@ -9,11 +9,10 @@ import (
 	"app/lib/threejs/controls"
 	"app/lib/threejs/effects"
 	"app/lib/threejs/lights"
-	"app/lib/threejs/loaders"
 	"app/lib/threejs/loaders/mmdloaders"
-	"app/lib/threejs/objects/sky"
 	"app/lib/threejs/objects/water"
 	"math"
+	"strconv"
 	"syscall/js"
 
 	"github.com/nobonobo/spago"
@@ -60,6 +59,20 @@ func NewTop() *Top {
 	return top
 }
 
+// DisposeModel is ...
+func (c *Top) DisposeModel() {
+
+	if c.characterMesh != nil {
+		c.scene.Remove(c.characterMesh)
+
+		c.characterMesh.PrintConsole()
+		c.characterMesh.DisposeAll()
+
+		c.characterMesh = nil
+	}
+
+}
+
 // ReloadModel is ...
 func (c *Top) ReloadModel() {
 
@@ -67,7 +80,7 @@ func (c *Top) ReloadModel() {
 	{
 		// c.effector = effects.NewOutlineEffect(c.renderer)
 
-		c.scene.Remove(c.characterMesh)
+		c.DisposeModel()
 
 		mmdHelper := mmdloaders.NewMMDAnimationHelper(map[string]interface{}{
 			"afterglow": 2.0,
@@ -80,31 +93,56 @@ func (c *Top) ReloadModel() {
 
 			// model
 			modelFile := store.CurrentModel.Path()
-			vmdFiles := []string{store.CurrentMotion.Path()}
+			// vmdFiles := []string{store.CurrentMotion.Path()}
 			// cameraFiles := []string{"./assets/models/mmd/vmds/wavefile_camera.vmd"}
 
 			mmdLoader := mmdloaders.NewMMDLoader()
-			mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
-
-				mesh.SetCastShadow(true)
-				// mesh.SetReceiveShadow(true)
-
-				mmdHelper.Add(mesh, map[string]interface{}{
-					"animation": animation.JSValue(),
-					"physics":   true,
-				})
-
+			mmdLoader.Load(modelFile, func(mesh mmdloaders.MMDMesh) {
 				c.scene.AddMesh(mesh)
 				c.characterMesh = mesh
 
-				// mmdLoader.LoadCameraAnimation(cameraFiles, c.camera, func(cameraAnimation mmdloaders.MMDAnimation) {
-				// 	mmdHelper.Add(c.camera, map[string]interface{}{
-				// 		"animation": cameraAnimation,
-				// 	})
-
-				// }, nil, nil)
-
 			}, nil, nil)
+			// mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
+
+			// 	// mesh.SetCastShadow(true)
+			// 	// mesh.SetReceiveShadow(true)
+
+			// 	mmdHelper.Add(mesh, map[string]interface{}{
+			// 		"animation": animation.JSValue(),
+			// 		"physics":   true,
+			// 	})
+
+			// 	c.scene.AddMesh(mesh)
+			// 	c.characterMesh = mesh
+
+			// 	// if g, err := c.characterMesh.Geometry(); err == nil {
+			// 	// 	log.Printf("Mesh geometry type: %v\n", g.JSValue().Get("type").String())
+			// 	// }
+			// 	// if m, err := c.characterMesh.Material(); err == nil {
+			// 	// 	length := m.JSValue().Length()
+			// 	// 	for i := 0; i < length; i++ {
+			// 	// 		v := threejs.NewDefaultMaterialFromJSValue(m.JSValue().Index(i))
+			// 	// 		log.Printf("Material %d : %v\n", i, v.JSValue().Get("type").String())
+			// 	// 		if tx, err := v.Map(); err == nil {
+			// 	// 			log.Printf("Map : %v\n", tx.JSValue().Get("uuid").String())
+			// 	// 		}
+			// 	// 		if tx, err := v.EnvMap(); err == nil {
+			// 	// 			log.Printf("EnvMap : %v\n", tx.JSValue().Get("uuid").String())
+			// 	// 		}
+			// 	// 		if tx, err := v.GradientMap(); err == nil {
+			// 	// 			log.Printf("GradientMap : %v\n", tx.JSValue().Get("uuid").String())
+			// 	// 		}
+			// 	// 	}
+			// 	// }
+
+			// 	// mmdLoader.LoadCameraAnimation(cameraFiles, c.camera, func(cameraAnimation mmdloaders.MMDAnimation) {
+			// 	// 	mmdHelper.Add(c.camera, map[string]interface{}{
+			// 	// 		"animation": cameraAnimation,
+			// 	// 	})
+
+			// 	// }, nil, nil)
+
+			// }, nil, nil)
 
 			return nil
 
@@ -176,7 +214,7 @@ func (c *Top) initSceneAndRenderer() {
 	// Scene
 	{
 		scene := threejs.NewScene()
-		scene.SetBackgroundColor(threejs.NewColorFromColorValue(0xeeeeee))
+		scene.SetBackgroundColor(threejs.NewColorFromColorValue(0xaaaaaa))
 		c.scene = scene
 	}
 
@@ -202,63 +240,63 @@ func (c *Top) initSceneAndRenderer() {
 
 	// Sky Dome
 	{
-		sky := sky.NewSky()
-		sky.Scale().SetScalar(1000)
+		// sky := sky.NewSky()
+		// sky.Scale().SetScalar(1000)
 
-		sky.SetTurbidity(12.7)
-		sky.SetRayleigh(0.1)
-		sky.SetMieCoefficient(0)
-		sky.SetMieDirectionalG(0.3)
-		sky.SetInclination(0)
-		sky.SetAzimuth(0.2)
+		// sky.SetTurbidity(12.7)
+		// sky.SetRayleigh(0.1)
+		// sky.SetMieCoefficient(0)
+		// sky.SetMieDirectionalG(0.3)
+		// sky.SetInclination(0)
+		// sky.SetAzimuth(0.2)
 
-		c.scene.Add(sky)
+		// c.scene.Add(sky)
 	}
 
 	// Ocean
 	{
 		// Normal Texture
-		loader := loaders.NewTextureLoader()
-		tx := loader.LoadSimply("./assets/threejs/ex/textures/water/Water_1_M_Normal.jpg")
-		tx.SetWrapS(threejs.RepeatWrapping)
-		tx.SetWrapT(threejs.RepeatWrapping)
+		// loader := loaders.NewTextureLoader()
+		// tx := loader.LoadSimply("./assets/threejs/ex/textures/water/Water_1_M_Normal.jpg")
+		// tx.SetWrapS(threejs.RepeatWrapping)
+		// tx.SetWrapT(threejs.RepeatWrapping)
 
-		ocean := water.NewOcean(
-			1000,
-			1000,
-			water.TextureSize(512, 512),
-			water.NormalizeTexture(tx),
-			water.Alpha(1.0),
-			water.DistortionScale(3.7),
-			water.SunColor(threejs.NewColorFromColorValue(0xffffff)),
-			water.OceanColor(threejs.NewColorFromColorValue(0x001e0f)),
-			water.Fog(false),
-		)
-		ocean.SetSize(1.0)
+		// ocean := water.NewOcean(
+		// 	1000,
+		// 	1000,
+		// 	water.TextureSize(512, 512),
+		// 	water.NormalizeTexture(tx),
+		// 	water.Alpha(1.0),
+		// 	water.DistortionScale(3.7),
+		// 	water.SunColor(threejs.NewColorFromColorValue(0xffffff)),
+		// 	water.OceanColor(threejs.NewColorFromColorValue(0x001e0f)),
+		// 	water.Fog(false),
+		// )
+		// ocean.SetSize(1.0)
 
-		ocean.Rotation().SetX(-math.Pi / 2)
-		ocean.Position().SetY(1)
+		// ocean.Rotation().SetX(-math.Pi / 2)
+		// ocean.Position().SetY(1)
 
-		c.ocean = ocean
-		c.scene.Add(ocean)
+		// c.ocean = ocean
+		// c.scene.Add(ocean)
 	}
 
 	// Water Ball
 	{
-		loader := loaders.NewCubeTextureLoader()
-		loader.SetPath("./assets/threejs/ex/textures/cube/Park3Med/")
-		urls := []string{
-			"px.jpg", "nx.jpg",
-			"py.jpg", "ny.jpg",
-			"pz.jpg", "nz.jpg",
-		}
-		tx := loader.LoadSimply(urls)
-		ball := water.NewBall(tx)
+		// loader := loaders.NewCubeTextureLoader()
+		// loader.SetPath("./assets/threejs/ex/textures/cube/Park3Med/")
+		// urls := []string{
+		// 	"px.jpg", "nx.jpg",
+		// 	"py.jpg", "ny.jpg",
+		// 	"pz.jpg", "nz.jpg",
+		// }
+		// tx := loader.LoadSimply(urls)
+		// ball := water.NewBall(tx)
 
-		// ball.Scale().Set2(0.5, 0.5, 0.5)
-		ball.Position().Set2(20, 15, -20)
+		// // ball.Scale().Set2(0.5, 0.5, 0.5)
+		// ball.Position().Set2(20, 15, -20)
 
-		c.scene.Add(ball)
+		// c.scene.Add(ball)
 	}
 
 	// Light
@@ -268,7 +306,7 @@ func (c *Top) initSceneAndRenderer() {
 		const (
 			skyColor       = threejs.ColorValue(0xffffff)
 			groundColor    = threejs.ColorValue(0xb97a20)
-			lightIntensity = threejs.LightIntensity(2)
+			lightIntensity = threejs.LightIntensity(4)
 		)
 		light := lights.NewHemisphereLight(skyColor, groundColor, lightIntensity)
 
@@ -277,24 +315,24 @@ func (c *Top) initSceneAndRenderer() {
 
 	// DirectionalLight
 	{
-		const (
-			lightColor     = threejs.ColorValue(0xffffff)
-			lightIntensity = threejs.LightIntensity(2)
-			width          = 12.0
-			height         = 4.0
-		)
-		light := lights.NewDirectionalLight(lightColor, lightIntensity)
-		light.SetCastShadow(true)
-		light.Position().Set2(-15, 40, 15)
-		light.Target().Position().Set2(-4, 0, -4)
+		// const (
+		// 	lightColor     = threejs.ColorValue(0xffffff)
+		// 	lightIntensity = threejs.LightIntensity(2)
+		// 	width          = 12.0
+		// 	height         = 4.0
+		// )
+		// light := lights.NewDirectionalLight(lightColor, lightIntensity)
+		// // light.SetCastShadow(true)
+		// light.Position().Set2(-15, 40, 15)
+		// light.Target().Position().Set2(-4, 0, -4)
 
-		light.Shadow().Camera().SetLeft(-20)
-		light.Shadow().Camera().SetRight(20)
-		light.Shadow().Camera().SetTop(20)
-		light.Shadow().Camera().SetBottom(-20)
+		// light.Shadow().Camera().SetLeft(-20)
+		// light.Shadow().Camera().SetRight(20)
+		// light.Shadow().Camera().SetTop(20)
+		// light.Shadow().Camera().SetBottom(-20)
 
-		c.scene.AddLight(light)
-		c.scene.Add(light.Target())
+		// c.scene.AddLight(light)
+		// c.scene.Add(light.Target())
 
 		// cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
 		// scene.Add(cameraHelper)
@@ -354,13 +392,33 @@ func (c *Top) render(this js.Value, args []js.Value) interface{} {
 	// Update time and animation
 	delta := c.clock.Delta()
 	c.animator.Update(delta)
-	c.ocean.SetTime(c.ocean.Time() + delta)
+	// c.ocean.SetTime(c.ocean.Time() + delta)
 
 	// Render
 	// c.effector.Render(c.scene, c.camera)
 	c.renderer.Render(c.scene, c.camera)
 
+	// Update Store
+	c.updateStoreForRendererInfo()
+
 	return nil
+}
+
+func (c *Top) updateStoreForRendererInfo() {
+
+	info := c.renderer.JSValue().Get("info")
+	memory := info.Get("memory")
+	render := info.Get("render")
+
+	store.RendererInfoStore().MemoryGeometries = strconv.Itoa(memory.Get("geometries").Int())
+	store.RendererInfoStore().MemoryTextures = strconv.Itoa(memory.Get("textures").Int())
+
+	store.RendererInfoStore().RenderCalls = strconv.Itoa(render.Get("calls").Int())
+	store.RendererInfoStore().RenderTriangles = strconv.Itoa(render.Get("triangles").Int())
+	store.RendererInfoStore().RenderPoints = strconv.Itoa(render.Get("points").Int())
+	store.RendererInfoStore().RenderLines = strconv.Itoa(render.Get("lines").Int())
+	store.RendererInfoStore().RenderFrame = strconv.Itoa(render.Get("frame").Int())
+
 }
 
 //
@@ -386,5 +444,11 @@ func (c *Top) refresh(ev js.Value) {
 func (c *Top) resetCameraPosition(ev js.Value) {
 
 	c.control.Reset()
+
+}
+
+func (c *Top) disposeModelEvent(ev js.Value) {
+
+	c.DisposeModel()
 
 }

@@ -27,7 +27,7 @@ func (c *Header) Render() spago.HTML {
 						),
 						spago.Tag("span", 							
 							spago.A("class", spago.S(`has-text-weight-semibold`)),
-							spago.T(`Spago`),
+							spago.T(`MMD three.js`),
 						),
 					),
 				),

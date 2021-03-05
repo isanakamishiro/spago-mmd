@@ -14,7 +14,7 @@ type RendererInfo struct {
 
 var rendererInfo *RendererInfo = &RendererInfo{}
 
-// GetRendererInfo is ...
-func GetRendererInfo() *RendererInfo {
+// RendererInfoStore gets ...
+func RendererInfoStore() *RendererInfo {
 	return rendererInfo
 }

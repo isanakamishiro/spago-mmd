@@ -2,16 +2,16 @@ package geometries
 
 import "app/lib/threejs"
 
-// SphereBufferGeometry is the BufferGeometry port of SphereGeometry.
-type SphereBufferGeometry interface {
+// SphereGeometry is the BufferGeometry port of SphereGeometry.
+type SphereGeometry interface {
 	threejs.BufferGeometry
 }
 
-type sphereBufferGeometryImp struct {
+type sphereGeometryImp struct {
 	threejs.BufferGeometry
 }
 
-// NewSphereBufferGeometry is constructor.
+// NewSphereGeometry is constructor.
 // radius — sphere radius. Default is 1.
 // widthSegments — number of horizontal segments. Minimum value is 3, and the default is 8.
 // heightSegments — number of vertical segments. Minimum value is 2, and the default is 6.
@@ -24,13 +24,13 @@ type sphereBufferGeometryImp struct {
 // Thus, incomplete spheres (akin to 'sphere slices') can be created
 // through the use of different values of phiStart, phiLength, thetaStart and thetaLength,
 // in order to define the points in which we start (or end) calculating those vertices.
-func NewSphereBufferGeometry(
+func NewSphereGeometry(
 	radius float64, widthSegments int, heightSegments int,
-) SphereBufferGeometry {
+) SphereGeometry {
 
 	return &planeBufferGeometryImp{
 		threejs.NewDefaultBufferGeometryFromJSValue(
-			threejs.GetJsObject("SphereBufferGeometry").New(
+			threejs.GetJsObject("SphereGeometry").New(
 				radius, widthSegments, heightSegments),
 		),
 	}

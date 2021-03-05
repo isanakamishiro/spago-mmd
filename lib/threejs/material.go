@@ -1,6 +1,7 @@
 package threejs
 
 import (
+	"errors"
 	"syscall/js"
 )
 
@@ -46,6 +47,39 @@ type Material interface {
 	// If the material's transparent property is not set to true, the material will remain fully opaque and this value will only affect its color.
 	// Default is 1.0.
 	SetOpacity(v float64)
+
+	// Disposes the material. Textures of a material don't get disposed. These needs to be disposed by Texture.
+	Dispose()
+
+	// Map gets The color map. Default is null.
+	Map() (Texture, error)
+
+	// EnvMap gets The environment map. To ensure a physically correct rendering, you should only add environment maps which were preprocessed by PMREMGenerator. Default is null.
+	EnvMap() (Texture, error)
+
+	// GradientMap gets Gradient map for toon shading. It's required to set Texture.minFilter and Texture.magFilter to THREE.NearestFilter when using this type of texture. Default is null.
+	GradientMap() (Texture, error)
+
+	// AlphaMap gets The alpha map is a grayscale texture that controls the opacity across the surface (black: fully transparent; white: fully opaque). Default is null.
+	AlphaMap() (Texture, error)
+
+	// AOMap gets The red channel of this texture is used as the ambient occlusion map. Default is null. The aoMap requires a second set of UVs.
+	AOMap() (Texture, error)
+
+	// BumpMap gets The texture to create a bump map. The black and white values map to the perceived depth in relation to the lights. Bump doesn't actually affect the geometry of the object, only the lighting. If a normal map is defined this will be ignored.
+	BumpMap() (Texture, error)
+
+	// EmissiveMap gets emisssive (glow) map. Default is null. The emissive map color is modulated by the emissive color and the emissive intensity. If you have an emissive map, be sure to set the emissive color to something other than black.
+	EmissiveMap() (Texture, error)
+
+	// LightMap gets The light map. Default is null. The lightMap requires a second set of UVs.
+	LightMap() (Texture, error)
+
+	// NormalMap gets The texture to create a normal map.
+	// The RGB values affect the surface normal for each pixel fragment and change the way the color is lit.
+	// Normal maps do not change the actual shape of the surface, only the lighting.
+	// In case the material has a normal map authored using the left handed convention, the y component of normalScale should be negated to compensate for the different handedness.
+	NormalMap() (Texture, error)
 }
 
 // MaterialImpl extend: [EventDispatcher]
@@ -113,264 +147,80 @@ func (m *defaultMaterialImpl) SetOpacity(v float64) {
 	m.Set("opacity", v)
 }
 
-// func (mm *MaterialImpl) AlphaTest() float64 {
-// 	return mm.Get("alphaTest").Float()
-// }
-// func (mm *MaterialImpl) SetAlphaTest(v float64) {
-// 	mm.Set("alphaTest", v)
-// }
-// func (mm *MaterialImpl) BlendDst() BlendingDstFactor {
-// 	return BlendingDstFactor(mm.Get("blendDst"))
-// }
-// func (mm *MaterialImpl) SetBlendDst(v BlendingDstFactor) {
-// 	mm.Set("blendDst", v)
-// }
-// func (mm *MaterialImpl) BlendDstAlpha() float64 {
-// 	return mm.Get("blendDstAlpha").Float()
-// }
-// func (mm *MaterialImpl) SetBlendDstAlpha(v float64) {
-// 	mm.Set("blendDstAlpha", v)
-// }
-// func (mm *MaterialImpl) BlendEquation() BlendingEquation {
-// 	return BlendingEquation(mm.Get("blendEquation"))
-// }
-// func (mm *MaterialImpl) SetBlendEquation(v BlendingEquation) {
-// 	mm.Set("blendEquation", v)
-// }
-// func (mm *MaterialImpl) BlendEquationAlpha() float64 {
-// 	return mm.Get("blendEquationAlpha").Float()
-// }
-// func (mm *MaterialImpl) SetBlendEquationAlpha(v float64) {
-// 	mm.Set("blendEquationAlpha", v)
-// }
-// func (mm *MaterialImpl) BlendSrc() js.Value {
-// 	return mm.Get("blendSrc")
-// }
-// func (mm *MaterialImpl) SetBlendSrc(v js.Value) {
-// 	mm.Set("blendSrc", v)
-// }
-// func (mm *MaterialImpl) BlendSrcAlpha() float64 {
-// 	return mm.Get("blendSrcAlpha").Float()
-// }
-// func (mm *MaterialImpl) SetBlendSrcAlpha(v float64) {
-// 	mm.Set("blendSrcAlpha", v)
-// }
-// func (mm *MaterialImpl) Blending() Blending {
-// 	return Blending(mm.Get("blending"))
-// }
-// func (mm *MaterialImpl) SetBlending(v Blending) {
-// 	mm.Set("blending", v)
-// }
-// func (mm *MaterialImpl) ClipIntersection() bool {
-// 	return mm.Get("clipIntersection").Bool()
-// }
-// func (mm *MaterialImpl) SetClipIntersection(v bool) {
-// 	mm.Set("clipIntersection", v)
-// }
-// func (mm *MaterialImpl) ClipShadows() bool {
-// 	return mm.Get("clipShadows").Bool()
-// }
-// func (mm *MaterialImpl) SetClipShadows(v bool) {
-// 	mm.Set("clipShadows", v)
-// }
-// func (mm *MaterialImpl) ClippingPlanes() js.Value {
-// 	return mm.Get("clippingPlanes")
-// }
-// func (mm *MaterialImpl) SetClippingPlanes(v js.Value) {
-// 	mm.Set("clippingPlanes", v)
-// }
-// func (mm *MaterialImpl) ColorWrite() bool {
-// 	return mm.Get("colorWrite").Bool()
-// }
-// func (mm *MaterialImpl) SetColorWrite(v bool) {
-// 	mm.Set("colorWrite", v)
-// }
-// func (mm *MaterialImpl) DepthFunc() DepthModes {
-// 	return DepthModes(mm.Get("depthFunc"))
-// }
-// func (mm *MaterialImpl) SetDepthFunc(v DepthModes) {
-// 	mm.Set("depthFunc", v)
-// }
-// func (mm *MaterialImpl) DepthTest() bool {
-// 	return mm.Get("depthTest").Bool()
-// }
-// func (mm *MaterialImpl) SetDepthTest(v bool) {
-// 	mm.Set("depthTest", v)
-// }
-// func (mm *MaterialImpl) DepthWrite() bool {
-// 	return mm.Get("depthWrite").Bool()
-// }
-// func (mm *MaterialImpl) SetDepthWrite(v bool) {
-// 	mm.Set("depthWrite", v)
-// }
-// func (mm *MaterialImpl) Dithering() bool {
-// 	return mm.Get("dithering").Bool()
-// }
-// func (mm *MaterialImpl) SetDithering(v bool) {
-// 	mm.Set("dithering", v)
-// }
-// func (mm *MaterialImpl) FlatShading() bool {
-// 	return mm.Get("flatShading").Bool()
-// }
-// func (mm *MaterialImpl) SetFlatShading(v bool) {
-// 	mm.Set("flatShading", v)
-// }
-// func (mm *MaterialImpl) Fog() bool {
-// 	return mm.Get("fog").Bool()
-// }
-// func (mm *MaterialImpl) SetFog(v bool) {
-// 	mm.Set("fog", v)
-// }
-// func (mm *MaterialImpl) Id() int {
-// 	return mm.Get("id").Int()
-// }
-// func (mm *MaterialImpl) SetId(v int) {
-// 	mm.Set("id", v)
-// }
-// func (mm *MaterialImpl) IsMaterial() bool {
-// 	return mm.Get("isMaterial").Bool()
-// }
-// func (mm *MaterialImpl) SetIsMaterial(v bool) {
-// 	mm.Set("isMaterial", v)
-// }
-// func (mm *MaterialImpl) Lights() bool {
-// 	return mm.Get("lights").Bool()
-// }
-// func (mm *MaterialImpl) SetLights(v bool) {
-// 	mm.Set("lights", v)
-// }
-// func (mm *MaterialImpl) Name() string {
-// 	return mm.Get("name").String()
-// }
-// func (mm *MaterialImpl) SetName(v string) {
-// 	mm.Set("name", v)
-// }
-// func (mm *MaterialImpl) NeedsUpdate() bool {
-// 	return mm.Get("needsUpdate").Bool()
-// }
-// func (mm *MaterialImpl) SetNeedsUpdate(v bool) {
-// 	mm.Set("needsUpdate", v)
-// }
-// func (mm *MaterialImpl) Opacity() float64 {
-// 	return mm.Get("opacity").Float()
-// }
-// func (mm *MaterialImpl) SetOpacity(v float64) {
-// 	mm.Set("opacity", v)
-// }
-// func (mm *MaterialImpl) Overdraw() float64 {
-// 	return mm.Get("overdraw").Float()
-// }
-// func (mm *MaterialImpl) SetOverdraw(v float64) {
-// 	mm.Set("overdraw", v)
-// }
-// func (mm *MaterialImpl) PolygonOffset() bool {
-// 	return mm.Get("polygonOffset").Bool()
-// }
-// func (mm *MaterialImpl) SetPolygonOffset(v bool) {
-// 	mm.Set("polygonOffset", v)
-// }
-// func (mm *MaterialImpl) PolygonOffsetFactor() float64 {
-// 	return mm.Get("polygonOffsetFactor").Float()
-// }
-// func (mm *MaterialImpl) SetPolygonOffsetFactor(v float64) {
-// 	mm.Set("polygonOffsetFactor", v)
-// }
-// func (mm *MaterialImpl) PolygonOffsetUnits() float64 {
-// 	return mm.Get("polygonOffsetUnits").Float()
-// }
-// func (mm *MaterialImpl) SetPolygonOffsetUnits(v float64) {
-// 	mm.Set("polygonOffsetUnits", v)
-// }
-// func (mm *MaterialImpl) Precision() string {
-// 	return mm.Get("precision").String()
-// }
-// func (mm *MaterialImpl) SetPrecision(v string) {
-// 	mm.Set("precision", v)
-// }
-// func (mm *MaterialImpl) PremultipliedAlpha() bool {
-// 	return mm.Get("premultipliedAlpha").Bool()
-// }
-// func (mm *MaterialImpl) SetPremultipliedAlpha(v bool) {
-// 	mm.Set("premultipliedAlpha", v)
-// }
-// func (mm *MaterialImpl) Side() Side {
-// 	return Side(mm.Get("side"))
-// }
-// func (mm *MaterialImpl) SetSide(v Side) {
-// 	mm.Set("side", v)
-// }
-// func (mm *MaterialImpl) Transparent() bool {
-// 	return mm.Get("transparent").Bool()
-// }
-// func (mm *MaterialImpl) SetTransparent(v bool) {
-// 	mm.Set("transparent", v)
-// }
-// func (mm *MaterialImpl) Type() string {
-// 	return mm.Get("type").String()
-// }
-// func (mm *MaterialImpl) SetType(v string) {
-// 	mm.Set("type", v)
-// }
-// func (mm *MaterialImpl) UserData() js.Value {
-// 	return mm.Get("userData")
-// }
-// func (mm *MaterialImpl) SetUserData(v js.Value) {
-// 	mm.Set("userData", v)
-// }
-// func (mm *MaterialImpl) Uuid() string {
-// 	return mm.Get("uuid").String()
-// }
-// func (mm *MaterialImpl) SetUuid(v string) {
-// 	mm.Set("uuid", v)
-// }
-// func (mm *MaterialImpl) VertexColors() Colors {
-// 	return Colors(mm.Get("vertexColors"))
-// }
-// func (mm *MaterialImpl) SetVertexColors(v Colors) {
-// 	mm.Set("vertexColors", v)
-// }
-// func (mm *MaterialImpl) VertexTangents() bool {
-// 	return mm.Get("vertexTangents").Bool()
-// }
-// func (mm *MaterialImpl) SetVertexTangents(v bool) {
-// 	mm.Set("vertexTangents", v)
-// }
-// func (mm *MaterialImpl) Visible() bool {
-// 	return mm.Get("visible").Bool()
-// }
-// func (mm *MaterialImpl) SetVisible(v bool) {
-// 	mm.Set("visible", v)
-// }
-// func (mm *MaterialImpl) AddEventListener(typ string, listener js.Value) {
-// 	mm.Call("addEventListener", typ, listener)
-// }
-// func (mm *MaterialImpl) Clone() Material {
-// 	return &MaterialImpl{Value: mm.Call("clone")}
-// }
-// func (mm *MaterialImpl) Copy(material Material) Material {
-// 	return &MaterialImpl{Value: mm.Call("copy", material.JSValue())}
-// }
-// func (mm *MaterialImpl) DispatchEvent(event js.Value) {
-// 	mm.Call("dispatchEvent", event)
-// }
-// func (mm *MaterialImpl) Dispose() {
-// 	mm.Call("dispose")
-// }
-// func (mm *MaterialImpl) HasEventListener(typ string, listener js.Value) bool {
-// 	return mm.Call("hasEventListener", typ, listener).Bool()
-// }
-// func (mm *MaterialImpl) OnBeforeCompile(shader js.Value, renderer *WebGLRenderer) {
-// 	mm.Call("onBeforeCompile", shader, renderer.JSValue())
-// }
-// func (mm *MaterialImpl) RemoveEventListener(typ string, listener js.Value) {
-// 	mm.Call("removeEventListener", typ, listener)
-// }
-// func (mm *MaterialImpl) SetValues(values js.Value) {
-// 	mm.Call("setValues", values)
-// }
-// func (mm *MaterialImpl) ToJSON(meta js.Value) js.Value {
-// 	return mm.Call("toJSON", meta)
-// }
-// func (mm *MaterialImpl) Update() {
-// 	mm.Call("update")
-// }
+func (m *defaultMaterialImpl) Dispose() {
+	m.Call("dispose")
+	// t := m.Get("dispose")
+	// log.Println(t)
+}
+
+func (m *defaultMaterialImpl) Map() (Texture, error) {
+	tx := m.Get("map")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) EnvMap() (Texture, error) {
+	tx := m.Get("envMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("env map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) GradientMap() (Texture, error) {
+	tx := m.Get("gradientMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("gradient map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) AlphaMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("alpha map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) AOMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("ao map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) BumpMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("bump map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) EmissiveMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("emissiv map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) LightMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("light map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}
+
+func (m *defaultMaterialImpl) NormalMap() (Texture, error) {
+	tx := m.Get("alphaMap")
+	if tx.IsUndefined() || tx.IsNull() {
+		return nil, errors.New("normal map is null or undefined")
+	}
+	return NewDefaultTextureFromJSValue(tx), nil
+}

@@ -28,7 +28,7 @@ type Ocean struct {
 // NewOcean creates water object.
 func NewOcean(width float64, height float64, options ...OceanOption) *Ocean {
 
-	geom := geometries.NewPlaneBufferGeometry(width, height, 1, 1)
+	geom := geometries.NewPlaneGeometry(width, height, 1, 1)
 	// geom := geometries.NewBoxBufferGeometry(width, height, 1000, 1, 1, 1)
 	// geom := geometries.NewSphereBufferGeometry(width/100, 100, 100)
 

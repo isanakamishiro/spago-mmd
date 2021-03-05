@@ -12,15 +12,19 @@ import (
 //
 // For a less efficient but easier-to-use representation of geometry, see Geometry.
 type BufferGeometry interface {
-	Geometry
+	JSValue() js.Value
 
 	// SetAttribute sets an attribute to this geometry. Use this rather than the attributes property, because an internal hashmap of .attributes is maintained to speed up iterating over attributes.
 	SetAttribute(name string, attribute *BufferAttribute)
+
+	// Disposes the object from memory.
+	// You need to call this when you want the BufferGeometry removed while the application is running.
+	Dispose()
 }
 
 // geometryImpl extend: [EventDispatcher]
 type bufferGeometryImpl struct {
-	Geometry
+	js.Value
 }
 
 // NewBufferGeometry creates a new BufferGeometry.
@@ -33,12 +37,16 @@ func NewBufferGeometry() BufferGeometry {
 // NewDefaultBufferGeometryFromJSValue creates a new BufferGeometry.
 func NewDefaultBufferGeometryFromJSValue(value js.Value) BufferGeometry {
 	return &bufferGeometryImpl{
-		NewDefaultGeometryFromJSValue(value),
+		Value: value,
 	}
 }
 
 func (c *bufferGeometryImpl) SetAttribute(name string, attribute *BufferAttribute) {
 
-	c.JSValue().Call("setAttribute", name, attribute.JSValue())
+	c.Call("setAttribute", name, attribute.JSValue())
 
+}
+
+func (c *bufferGeometryImpl) Dispose() {
+	c.Call("dispose")
 }

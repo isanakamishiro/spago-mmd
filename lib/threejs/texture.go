@@ -25,6 +25,9 @@ type Texture interface {
 
 	// SetNeedsUpdate set this to true to trigger an update next time the texture is used. Particularly important for setting the wrap mode.
 	SetNeedsUpdate(b bool)
+
+	// Dispose call EventDispatcher.dispatchEvent with a 'dispose' event type.
+	Dispose()
 }
 
 type textureImp struct {
@@ -95,4 +98,8 @@ func (c *textureImp) Repeat() *Vector2 {
 // SetNeedsUpdate is ...
 func (c *textureImp) SetNeedsUpdate(b bool) {
 	c.Set("needsUpdate", b)
+}
+
+func (c *textureImp) Dispose() {
+	c.Call("dispose")
 }

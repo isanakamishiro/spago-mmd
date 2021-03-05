@@ -1,6 +1,7 @@
 package views
 
 import (
+	"app/frontend/components"
 	"github.com/nobonobo/spago"
 )
 
@@ -15,6 +16,14 @@ func (c *Top) Render() spago.HTML {
 			),
 			spago.Tag("div", 				
 				spago.A("class", spago.S(`hero-body p-0`)),
+				spago.Tag("div", 					
+					spago.A("class", spago.S(`container is-align-self-flex-start has-text-white is-size-7`)),
+					spago.Tag("div", 						
+						spago.A("class", spago.S(`is-overlay`)),
+						spago.A("style", spago.S(`width: 200px;`)),
+						spago.C(&components.RendererInfoPane{}),
+					),
+				),
 				spago.Tag("canvas", 					
 					spago.A("id", spago.S(`cv`)),
 					spago.A("width", spago.S(``, spago.S(c.canvasWidth), ``)),
@@ -39,6 +48,12 @@ func (c *Top) Render() spago.HTML {
 								spago.Tag("a", 									
 									spago.Event("click", c.resetCameraPosition),
 									spago.T(`Reset Camera Pos`),
+								),
+							),
+							spago.Tag("li", 
+								spago.Tag("a", 									
+									spago.Event("click", c.disposeModelEvent),
+									spago.T(`Dispose Model`),
 								),
 							),
 						),

@@ -1,0 +1,28 @@
+<import>app/frontend/store</import>
+<div class="content">
+    <ul>
+        <li>
+            MemoryGeometries : {{store.RendererInfoStore().MemoryGeometries}}
+        </li>
+        <li>
+            MemoryTextures : {{store.RendererInfoStore().MemoryTextures}}
+        </li>
+    </ul>
+    <ul>
+        <li>
+            RenderCalls : {{store.RendererInfoStore().RenderCalls}}
+        </li>
+        <li>
+            RenderTriangles : {{store.RendererInfoStore().RenderTriangles}}
+        </li>
+        <li>
+            RenderPoints : {{store.RendererInfoStore().RenderPoints}}
+        </li>
+        <li>
+            RenderLines : {{store.RendererInfoStore().RenderLines}}
+        </li>
+        <li>
+            RenderFrame : {{store.RendererInfoStore().RenderFrame}}
+        </li>
+    </ul>
+</div>

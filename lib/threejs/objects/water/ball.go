@@ -16,7 +16,7 @@ type Ball struct {
 // NewBall creates water Ball.
 func NewBall(tx textures.CubeTexture) *Ball {
 
-	g := geometries.NewSphereBufferGeometry(1, 32, 32)
+	g := geometries.NewSphereGeometry(1, 32, 32)
 	shader := fresnel.NewFresnelShader()
 
 	u := shader.Uniforms()

@@ -7,7 +7,7 @@ import (
 )
 
 //go:generate rm -Rf dist/
-//go:generate sh -c "cd frontend && spago deploy ../dist"
+//go:generate sh -c "cd frontend && spago deploy -tinygo ../dist"
 //go:generate cp -Rf frontend/assets frontend/favicon.ico frontend/serviceworker.js dist/
 
 func main() {

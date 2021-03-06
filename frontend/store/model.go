@@ -24,7 +24,7 @@ func (c Model) Path() string {
 	case Lisa:
 		return "./assets/models/mmd/lisa/lisa.pmx"
 	case Miku:
-		return "./assets/models/mmd/lat/Lat式ミクVer2.31_Normalエッジ無し専用.pmd"
+		return "./assets/models/mmd/miku/miku_v2.pmd"
 	default:
 		return ""
 	}

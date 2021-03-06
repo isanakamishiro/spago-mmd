@@ -115,26 +115,6 @@ func (c *Top) ReloadModel() {
 			// 	c.scene.AddMesh(mesh)
 			// 	c.characterMesh = mesh
 
-			// 	// if g, err := c.characterMesh.Geometry(); err == nil {
-			// 	// 	log.Printf("Mesh geometry type: %v\n", g.JSValue().Get("type").String())
-			// 	// }
-			// 	// if m, err := c.characterMesh.Material(); err == nil {
-			// 	// 	length := m.JSValue().Length()
-			// 	// 	for i := 0; i < length; i++ {
-			// 	// 		v := threejs.NewDefaultMaterialFromJSValue(m.JSValue().Index(i))
-			// 	// 		log.Printf("Material %d : %v\n", i, v.JSValue().Get("type").String())
-			// 	// 		if tx, err := v.Map(); err == nil {
-			// 	// 			log.Printf("Map : %v\n", tx.JSValue().Get("uuid").String())
-			// 	// 		}
-			// 	// 		if tx, err := v.EnvMap(); err == nil {
-			// 	// 			log.Printf("EnvMap : %v\n", tx.JSValue().Get("uuid").String())
-			// 	// 		}
-			// 	// 		if tx, err := v.GradientMap(); err == nil {
-			// 	// 			log.Printf("GradientMap : %v\n", tx.JSValue().Get("uuid").String())
-			// 	// 		}
-			// 	// 	}
-			// 	// }
-
 			// 	// mmdLoader.LoadCameraAnimation(cameraFiles, c.camera, func(cameraAnimation mmdloaders.MMDAnimation) {
 			// 	// 	mmdHelper.Add(c.camera, map[string]interface{}{
 			// 	// 		"animation": cameraAnimation,

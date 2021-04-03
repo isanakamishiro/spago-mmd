@@ -11,7 +11,7 @@ type Matrix4 struct {
 
 // NewMatrix4 is factory method for Matrix4.
 func NewMatrix4() *Matrix4 {
-	return &Matrix4{Value: GetJsObject("Matrix4").New()}
+	return &Matrix4{Value: Threejs("Matrix4").New()}
 }
 
 // JSValue is ...

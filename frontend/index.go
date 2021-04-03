@@ -28,6 +28,16 @@ func init() {
 		topView.ReloadModel()
 	})
 
+	dispatcher.Register(actions.ChangeMotion, func(args ...interface{}) {
+		log.Println("Change Motion.")
+		topView.PlayMotion()
+	})
+
+	dispatcher.Register(actions.ResetPose, func(args ...interface{}) {
+		log.Println("Reset pose.")
+		topView.ResetPose()
+	})
+
 	loadScript("./assets/threejs/ex/js/libs/ammo.wasm.js")
 
 }

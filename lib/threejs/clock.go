@@ -25,7 +25,7 @@ type clockImp struct {
 
 // NewClock is factory method for Clock.
 func NewClock(autoStart bool) Clock {
-	return &clockImp{Value: GetJsObject("Clock").New(autoStart)}
+	return &clockImp{Value: Threejs("Clock").New(autoStart)}
 }
 
 // JSValue is ...

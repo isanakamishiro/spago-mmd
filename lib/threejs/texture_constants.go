@@ -61,35 +61,35 @@ var textureFilterDic map[TextureFilter]js.Value = make(map[TextureFilter]js.Valu
 
 func getMappingDictionary() map[Mapping]js.Value {
 	if len(mappingDic) == 0 {
-		mappingDic[UVMapping] = GetJsObject("UVMapping")
-		mappingDic[CubeReflectionMapping] = GetJsObject("CubeReflectionMapping")
-		mappingDic[CubeRefractionMapping] = GetJsObject("CubeRefractionMapping")
-		mappingDic[EquirectangularReflectionMapping] = GetJsObject("EquirectangularReflectionMapping")
-		mappingDic[EquirectangularRefractionMapping] = GetJsObject("EquirectangularRefractionMapping")
-		mappingDic[CubeUVReflectionMapping] = GetJsObject("CubeUVReflectionMapping")
-		mappingDic[CubeUVRefractionMapping] = GetJsObject("CubeUVRefractionMapping")
+		mappingDic[UVMapping] = Threejs("UVMapping")
+		mappingDic[CubeReflectionMapping] = Threejs("CubeReflectionMapping")
+		mappingDic[CubeRefractionMapping] = Threejs("CubeRefractionMapping")
+		mappingDic[EquirectangularReflectionMapping] = Threejs("EquirectangularReflectionMapping")
+		mappingDic[EquirectangularRefractionMapping] = Threejs("EquirectangularRefractionMapping")
+		mappingDic[CubeUVReflectionMapping] = Threejs("CubeUVReflectionMapping")
+		mappingDic[CubeUVRefractionMapping] = Threejs("CubeUVRefractionMapping")
 	}
 	return mappingDic
 }
 
 func getWrappingDictionary() map[Wrapping]js.Value {
 	if len(wrappingDic) == 0 {
-		wrappingDic[RepeatWrapping] = GetJsObject("RepeatWrapping")
-		wrappingDic[ClampToEdgeWrapping] = GetJsObject("ClampToEdgeWrapping")
-		wrappingDic[MirroredRepeatWrapping] = GetJsObject("MirroredRepeatWrapping")
+		wrappingDic[RepeatWrapping] = Threejs("RepeatWrapping")
+		wrappingDic[ClampToEdgeWrapping] = Threejs("ClampToEdgeWrapping")
+		wrappingDic[MirroredRepeatWrapping] = Threejs("MirroredRepeatWrapping")
 	}
 	return wrappingDic
 }
 
 func getTextureFilterDictionary() map[TextureFilter]js.Value {
 	if len(textureFilterDic) == 0 {
-		textureFilterDic[NearestFilter] = GetJsObject("NearestFilter")
-		textureFilterDic[NearestMipmapNearestFilter] = GetJsObject("NearestMipmapNearestFilter")
-		textureFilterDic[NearestMipmapLinearFilter] = GetJsObject("NearestMipmapLinearFilter")
+		textureFilterDic[NearestFilter] = Threejs("NearestFilter")
+		textureFilterDic[NearestMipmapNearestFilter] = Threejs("NearestMipmapNearestFilter")
+		textureFilterDic[NearestMipmapLinearFilter] = Threejs("NearestMipmapLinearFilter")
 
-		textureFilterDic[LinearFilter] = GetJsObject("LinearFilter")
-		textureFilterDic[LinearMipmapNearestFilter] = GetJsObject("LinearMipmapNearestFilter")
-		textureFilterDic[LinearMipmapLinearFilter] = GetJsObject("LinearMipmapLinearFilter")
+		textureFilterDic[LinearFilter] = Threejs("LinearFilter")
+		textureFilterDic[LinearMipmapNearestFilter] = Threejs("LinearMipmapNearestFilter")
+		textureFilterDic[LinearMipmapLinearFilter] = Threejs("LinearMipmapLinearFilter")
 	}
 	return textureFilterDic
 }

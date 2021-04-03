@@ -22,7 +22,7 @@ type Matrix3 struct {
 
 // NewMatrix3 is factory method for Matrix3.
 func NewMatrix3() *Matrix3 {
-	return &Matrix3{Value: GetJsObject("Matrix3").New()}
+	return &Matrix3{Value: Threejs("Matrix3").New()}
 }
 
 // JSValue is ...

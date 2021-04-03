@@ -68,30 +68,20 @@ func (c *Header) changeModelToMiku(ev js.Value) {
 
 func (c *Header) changeMotionToDance1(ev js.Value) {
 
-	if store.CurrentMotion != store.Dance1 {
-		store.CurrentMotion = store.Dance1
-
-		dispatcher.Dispatch(actions.ChangeMotion)
-	}
-
+	store.CurrentMotion = store.Dance1
+	dispatcher.Dispatch(actions.ChangeMotion)
 }
 
 func (c *Header) changeMotionToDance2(ev js.Value) {
 
-	if store.CurrentMotion != store.Dance2 {
-		store.CurrentMotion = store.Dance2
-
-		dispatcher.Dispatch(actions.ChangeMotion)
-	}
+	store.CurrentMotion = store.Dance2
+	dispatcher.Dispatch(actions.ChangeMotion)
 
 }
 
 func (c *Header) changeMotionToDance3(ev js.Value) {
 
-	if store.CurrentMotion != store.Dance3 {
-		store.CurrentMotion = store.Dance3
-
-		dispatcher.Dispatch(actions.ChangeMotion)
-	}
+	store.CurrentMotion = store.Dance3
+	dispatcher.Dispatch(actions.ChangeMotion)
 
 }

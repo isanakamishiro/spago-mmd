@@ -39,7 +39,7 @@ type Vector2 struct {
 
 // NewVector2 is ...
 func NewVector2(x float64, y float64) *Vector2 {
-	return &Vector2{Value: GetJsObject("Vector2").New(x, y)}
+	return &Vector2{Value: Threejs("Vector2").New(x, y)}
 }
 
 // JSValue is ...

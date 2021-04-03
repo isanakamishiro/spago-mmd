@@ -11,7 +11,7 @@ type Quaternion struct {
 
 // NewQuaternion is factory method for Quaternion.
 func NewQuaternion(x float64, y float64, z float64, w float64) *Quaternion {
-	return &Quaternion{Value: GetJsObject("Quaternion").New(x, y, z, w)}
+	return &Quaternion{Value: Threejs("Quaternion").New(x, y, z, w)}
 }
 
 // JSValue is ...

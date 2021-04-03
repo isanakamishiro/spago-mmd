@@ -15,7 +15,7 @@ func NewFloat32BufferAttribute(arrayLength int, itemSize int) *BufferAttribute {
 	ar := js.Global().Get("Float32Array").New(arrayLength * itemSize)
 
 	return &BufferAttribute{
-		Value: GetJsObject("BufferAttribute").New(ar, itemSize),
+		Value: Threejs("BufferAttribute").New(ar, itemSize),
 	}
 }
 

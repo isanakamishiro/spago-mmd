@@ -34,7 +34,7 @@ func NewScene() Scene {
 
 	return &sceneImpl{
 		NewObject3DFromJSValue(
-			GetJsObject("Scene").New(),
+			Threejs("Scene").New(),
 		),
 	}
 }

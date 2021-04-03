@@ -32,7 +32,7 @@ type meshImpl struct {
 // NewMesh is factory method for MeshImpl.
 func NewMesh(geometry BufferGeometry, material Material) Mesh {
 	return &meshImpl{
-		NewObject3DFromJSValue(GetJsObject("Mesh").New(geometry.JSValue(), material.JSValue())),
+		NewObject3DFromJSValue(Threejs("Mesh").New(geometry.JSValue(), material.JSValue())),
 	}
 }
 
@@ -45,7 +45,7 @@ func NewMeshWithMultiMaterial(geometry BufferGeometry, materialSlice []Material)
 	}
 
 	return &meshImpl{
-		NewObject3DFromJSValue(GetJsObject("Mesh").New(geometry.JSValue(), a)),
+		NewObject3DFromJSValue(Threejs("Mesh").New(geometry.JSValue(), a)),
 	}
 }
 
@@ -62,7 +62,7 @@ func (c *meshImpl) Geometry() (BufferGeometry, error) {
 	if geom.IsUndefined() || geom.IsNull() {
 		return nil, errors.New("geometry is null or undefined")
 	}
-	return NewDefaultBufferGeometryFromJSValue(geom), nil
+	return NewBufferGeometryFromJSValue(geom), nil
 }
 
 func (c *meshImpl) Materials() ([]Material, error) {

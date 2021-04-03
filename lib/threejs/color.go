@@ -54,7 +54,7 @@ type colorImp struct {
 
 // NewColor is constructor for color object.
 func NewColor() Color {
-	return &colorImp{Value: GetJsObject("Color").New()}
+	return &colorImp{Value: Threejs("Color").New()}
 }
 
 // NewColorFromJSValue is constructor for color object.
@@ -64,17 +64,17 @@ func NewColorFromJSValue(value js.Value) Color {
 
 // NewColorFromColorValue is constructor for color object from Hexadecimal value
 func NewColorFromColorValue(color ColorValue) Color {
-	return &colorImp{Value: GetJsObject("Color").New(float64(color))}
+	return &colorImp{Value: Threejs("Color").New(float64(color))}
 }
 
 // NewColorFromColorName is constructor for color object from ColorName
 func NewColorFromColorName(colorName ColorName) Color {
-	return &colorImp{Value: GetJsObject("Color").New(string(colorName))}
+	return &colorImp{Value: Threejs("Color").New(string(colorName))}
 }
 
 // NewColorFromRGB is constructor for color object from separate RGB values between 0 and 1
 func NewColorFromRGB(r, g, b float64) Color {
-	return &colorImp{Value: GetJsObject("Color").New(r, g, b)}
+	return &colorImp{Value: Threejs("Color").New(r, g, b)}
 }
 
 // JSValue is ...

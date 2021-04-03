@@ -11,7 +11,7 @@ type Vector3 struct {
 
 // NewVector3 is ...
 func NewVector3(x float64, y float64, z float64) *Vector3 {
-	return &Vector3{Value: GetJsObject("Vector3").New(x, y, z)}
+	return &Vector3{Value: Threejs("Vector3").New(x, y, z)}
 }
 
 // NewVector3FromJSValue is ...

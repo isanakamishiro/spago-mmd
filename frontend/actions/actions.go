@@ -9,4 +9,6 @@ const (
 	ChangeModel
 	// ChangeMotion is ...
 	ChangeMotion
+	// ResetPose is ...
+	ResetPose
 )

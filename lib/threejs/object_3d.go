@@ -126,7 +126,7 @@ type defaultObject3D struct {
 
 // NewObject3D is factory method for Object3D.
 func NewObject3D() Object3D {
-	return NewObject3DFromJSValue(GetJsObject("Object3D").New())
+	return NewObject3DFromJSValue(Threejs("Object3D").New())
 }
 
 // NewObject3DFromJSValue is factory method for Object3D.

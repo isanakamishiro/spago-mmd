@@ -9,9 +9,9 @@ var sideMap map[Side]js.Value = make(map[Side]js.Value)
 
 func getSideDictionary() map[Side]js.Value {
 	if len(sideMap) == 0 {
-		sideMap[FrontSide] = GetJsObject("FrontSide")
-		sideMap[BackSide] = GetJsObject("BackSide")
-		sideMap[DoubleSide] = GetJsObject("DoubleSide")
+		sideMap[FrontSide] = Threejs("FrontSide")
+		sideMap[BackSide] = Threejs("BackSide")
+		sideMap[DoubleSide] = Threejs("DoubleSide")
 	}
 	return sideMap
 }

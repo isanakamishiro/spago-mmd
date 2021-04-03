@@ -103,8 +103,8 @@ func LoadModuleAs(name string, url string) js.Value {
 	return res[0] // 最初の結果のみ
 }
 
-// GetJsObject is getter for JavaScript object of ThreeJs.
-func GetJsObject(key string) js.Value {
+// Threejs is getter for JavaScript object of ThreeJs.
+func Threejs(key string) js.Value {
 	return module.Get(key)
 }
 

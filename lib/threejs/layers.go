@@ -14,7 +14,7 @@ type Layers struct {
 
 // NewLayers create a new Layers object, with membership initially set to layer 0.
 func NewLayers() *Layers {
-	return &Layers{Value: GetJsObject("Layers").New()}
+	return &Layers{Value: Threejs("Layers").New()}
 }
 
 // JSValue ...

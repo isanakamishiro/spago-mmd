@@ -29,7 +29,7 @@ type skinnedMeshImp struct {
 // NewSkinnedMesh creates SkinnedMesh.
 func NewSkinnedMesh(geometry BufferGeometry, material Material) SkinnedMesh {
 	return &skinnedMeshImp{
-		NewMeshFromJSValue(GetJsObject("SkinnedMesh").New(geometry.JSValue(), material.JSValue())),
+		NewMeshFromJSValue(Threejs("SkinnedMesh").New(geometry.JSValue(), material.JSValue())),
 	}
 }
 
@@ -42,7 +42,7 @@ func NewSkinnedMeshWithMultiMaterial(geometry BufferGeometry, materialSlice []Ma
 	}
 
 	return &skinnedMeshImp{
-		NewMeshFromJSValue(GetJsObject("SkinnedMesh").New(geometry.JSValue(), a)),
+		NewMeshFromJSValue(Threejs("SkinnedMesh").New(geometry.JSValue(), a)),
 	}
 }
 

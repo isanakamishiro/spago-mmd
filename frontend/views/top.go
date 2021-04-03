@@ -5,13 +5,19 @@ import (
 	"app/frontend/components"
 	"app/frontend/store"
 	"app/lib/threejs"
-	"app/lib/threejs/cameras"
-	"app/lib/threejs/controls"
-	"app/lib/threejs/effects"
-	"app/lib/threejs/lights"
-	"app/lib/threejs/loaders/mmdloaders"
-	"app/lib/threejs/objects/water"
+	"app/lib/threejs/animation"
+	"app/lib/threejs/camera"
+	"app/lib/threejs/control"
+	"app/lib/threejs/light"
+	"app/lib/threejs/mmd"
+	"app/lib/threejs/object/sky"
+	"app/lib/threejs/object/water"
+	"app/lib/threejs/texture"
+	"context"
+	"log"
 	"math"
+	"os"
+	"runtime/pprof"
 	"strconv"
 	"syscall/js"
 
@@ -35,13 +41,15 @@ type Top struct {
 	renderer threejs.Renderer
 	camera   threejs.Camera
 	scene    threejs.Scene
-	control  controls.OrbitControls
+	control  control.OrbitControls
 	clock    threejs.Clock
 
-	effector      *effects.OutlineEffect
-	animator      *mmdloaders.MMDAnimationHelper
-	characterMesh mmdloaders.MMDMesh
+	// effector      *effect.OutlineEffect
+
+	animator      *mmd.AnimationHelper
+	characterMesh threejs.SkinnedMesh
 	ocean         *water.Ocean
+	// clip          animation.Clip
 
 	renderFunction js.Func
 }
@@ -62,80 +70,252 @@ func NewTop() *Top {
 // DisposeModel is ...
 func (c *Top) DisposeModel() {
 
-	if c.characterMesh != nil {
-		c.scene.Remove(c.characterMesh)
-
-		c.characterMesh.PrintConsole()
-		c.characterMesh.DisposeAll()
-
-		c.characterMesh = nil
+	if c.animator == nil || c.characterMesh == nil {
+		log.Println("No model is loaded.")
+		return
 	}
+
+	_, err := c.animator.Mixer(c.characterMesh)
+	if err == nil {
+		c.animator.RemoveMesh(c.characterMesh)
+	}
+
+	c.scene.Remove(c.characterMesh)
+	c.characterMesh.DisposeAll()
+
+	c.characterMesh = nil
+	c.animator = nil
 
 }
 
 // ReloadModel is ...
 func (c *Top) ReloadModel() {
 
-	// Character
-	{
-		// c.effector = effects.NewOutlineEffect(c.renderer)
+	c.DisposeModel()
 
-		c.DisposeModel()
+	mmdHelper := mmd.NewAnimationHelper(map[string]interface{}{
+		"afterglow": 2.0,
+	})
+	c.animator = mmdHelper
 
-		mmdHelper := mmdloaders.NewMMDAnimationHelper(map[string]interface{}{
-			"afterglow": 2.0,
-		})
-		c.animator = mmdHelper
+	var fn js.Func
+	fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		defer fn.Release()
 
-		var fn js.Func
-		fn = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-			defer fn.Release()
+		// model
+		modelFile := store.CurrentModel.Path()
+		// vmdFiles := []string{store.CurrentMotion.Path()}
+		// cameraFiles := []string{"./assets/models/mmd/vmds/wavefile_camera.vmd"}
 
-			// model
-			modelFile := store.CurrentModel.Path()
-			// vmdFiles := []string{store.CurrentMotion.Path()}
-			// cameraFiles := []string{"./assets/models/mmd/vmds/wavefile_camera.vmd"}
-
-			mmdLoader := mmdloaders.NewMMDLoader()
-			mmdLoader.Load(modelFile, func(mesh mmdloaders.MMDMesh) {
-				c.scene.AddMesh(mesh)
-				c.characterMesh = mesh
-
-			}, nil, nil)
-			// mmdLoader.LoadWithAnimation(modelFile, vmdFiles, func(mesh mmdloaders.MMDMesh, animation mmdloaders.MMDAnimation) {
-
-			// 	// mesh.SetCastShadow(true)
-			// 	// mesh.SetReceiveShadow(true)
-
-			// 	mmdHelper.Add(mesh, map[string]interface{}{
-			// 		"animation": animation.JSValue(),
-			// 		"physics":   true,
-			// 	})
-
-			// 	c.scene.AddMesh(mesh)
-			// 	c.characterMesh = mesh
-
-			// 	// mmdLoader.LoadCameraAnimation(cameraFiles, c.camera, func(cameraAnimation mmdloaders.MMDAnimation) {
-			// 	// 	mmdHelper.Add(c.camera, map[string]interface{}{
-			// 	// 		"animation": cameraAnimation,
-			// 	// 	})
-
-			// 	// }, nil, nil)
-
-			// }, nil, nil)
-
-			return nil
-
+		manager := threejs.NewLoadingManager()
+		manager.SetOnLoad(func() {
+			c.scene.AddMesh(c.characterMesh)
 		})
 
-		// Ammo functionが呼ばれていない状態 = Function, コール後、Object
-		if js.Global().Get("Ammo").Type() == js.TypeFunction {
-			js.Global().Call("Ammo").Call("then", fn)
-		} else {
-			fn.Invoke()
+		mmdLoader := mmd.NewLoaderWithManager(manager)
+		go func() {
+			// 処理の途中で中断してもgoroutineがリークしないようにするためのcontext
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			// Model Load
+			log.Println("Next - Model loading.")
+			{
+				futureModel := mmdLoader.LoadModel(ctx, modelFile)
+				for v := range futureModel {
+					if v.Err() != nil {
+						log.Printf("Loading mmd model file %v was failure.\n", modelFile)
+						continue
+					}
+
+					if v.Mesh() != nil {
+						c.characterMesh = v.Mesh()
+						log.Println("Complete to loaded.")
+						continue
+					}
+
+					log.Printf("Loaded %v byte in %v.\n", v.Loaded(), v.Total())
+				}
+			}
+
+			// Load Poses after model loading.
+			log.Println("Next - Pose loading.")
+			{
+				vpdFile := []string{
+					"assets/models/mmd/vpds/01.vpd",
+					"assets/models/mmd/vpds/02.vpd",
+					"assets/models/mmd/vpds/03.vpd",
+					"assets/models/mmd/vpds/04.vpd",
+					"assets/models/mmd/vpds/05.vpd",
+				}
+
+				futurePose := mmdLoader.LoadVPDs(ctx, vpdFile, false)
+				for v := range futurePose {
+					if v.Err() != nil {
+						log.Printf("Loading vpd file %v was failure.\n", vpdFile)
+						break
+					}
+
+					if v.Vpd() != nil {
+						c.animator.Pose(c.characterMesh, v.Vpd())
+						log.Println("pose loaded.")
+					}
+
+					// log.Printf("Loaded %v byte in %v.\n", v.Loaded(), v.Total())
+				}
+
+			}
+
+			log.Println("Next - Motion loading.")
+			{
+				vmdFiles := []string{
+					store.Dance1.Path(),
+					store.Dance2.Path(),
+					store.Dance3.Path(),
+				}
+				// animations := make(map[string]animation.Clip)
+
+				futureMotion := mmdLoader.LoadMotionAnimation(ctx, vmdFiles, c.characterMesh)
+				for v := range futureMotion {
+					if v.Err() != nil {
+						log.Printf("Loading motion file was failure.\n")
+						break
+					}
+
+					if v.Clip() != nil {
+						// c.animator.Pose(c.characterMesh, v.Vpd())
+						js.Global().Get("console").Call("log", v.Clip().JSValue())
+
+						log.Println("Motion loaded.")
+					}
+
+					// log.Printf("Loaded %v byte in %v.\n", v.Loaded(), v.Total())
+				}
+
+			}
+			log.Println("Finish - ReloadModel.")
+
+		}()
+
+		pprof.Lookup("goroutine").WriteTo(os.Stdout, 2)
+
+		return nil
+
+	})
+
+	// Ammo functionが呼ばれていない状態 = Function, コール後、Object
+	if js.Global().Get("Ammo").Type() == js.TypeFunction {
+		js.Global().Call("Ammo").Call("then", fn)
+	} else {
+		fn.Invoke()
+	}
+
+}
+
+// PlayMotion is ...
+func (c *Top) PlayMotion() {
+
+	if c.animator == nil || c.characterMesh == nil {
+		log.Println("model is not initialized.")
+		return
+	}
+
+	c.characterMesh.Pose()
+
+	mixer, err := c.animator.Mixer(c.characterMesh.(threejs.SkinnedMesh))
+	if err != nil {
+		log.Println("getting mixer was failed.")
+		return
+	}
+
+	// if err != nil { // animation未登録
+	// 	var a []animation.Clip = []animation.Clip{}
+	// 	for _, v := range store.MotionDictionay {
+	// 		a = append(a, v)
+	// 	}
+
+	// 	c.animator.AddMesh(
+	// 		c.characterMesh,
+	// 		mmd.AnimationClips(a),
+	// 		mmd.Physics(true),
+	// 	)
+	// 	mixer, err = c.animator.Mixer(c.characterMesh.(threejs.SkinnedMesh))
+	// 	if err != nil {
+	// 		log.Println("getting mixer was failed.")
+	// 		return
+	// 	}
+	// }
+	mixer.StopAllAction()
+
+	motion, ok := store.MotionDictionay[store.CurrentMotion]
+	if !ok {
+		log.Println("motion is not found.")
+		return
+	}
+
+	action, err := mixer.ExistingAction(motion)
+	if err != nil {
+		log.Println("action could not be retrieved.")
+		return
+	}
+	action.SetLoop(animation.LoopOnce, 0)
+	action.Reset()
+	action.Play()
+
+	// js.Global().Get("console").Call("log", c.animator.JSValue())
+
+}
+
+// ResetPose is ...
+func (c *Top) ResetPose() {
+
+	if c.animator == nil || c.characterMesh == nil {
+		log.Println("model is not initialized.")
+		return
+	}
+
+	mixer, err := c.animator.Mixer(c.characterMesh.(threejs.SkinnedMesh))
+	if err != nil { // animation未登録
+		var a []animation.Clip = []animation.Clip{}
+		for _, v := range store.MotionDictionay {
+			a = append(a, v)
 		}
 
+		c.animator.AddMesh(
+			c.characterMesh,
+			mmd.AnimationClips(a),
+			mmd.Physics(true),
+		)
+		mixer, err = c.animator.Mixer(c.characterMesh.(threejs.SkinnedMesh))
+		if err != nil {
+			log.Println("getting mixer was failed.")
+			return
+		}
 	}
+
+	mixer.StopAllAction()
+	mixer.SetTime(0)
+	js.Global().Get("console").Call("log", mixer.JSValue())
+
+	for _, v := range store.MotionDictionay {
+		action, err := mixer.ExistingAction(v)
+		if err != nil {
+			continue
+		}
+		// action.Stop()
+
+		// // action.SetWeight(0)
+		// action.SetEnabled(false)
+		// // action.Reset()
+		// // action.SetEffectiveWeight(0)
+		// // action.SetTime(50)
+		// action.Play()
+		js.Global().Get("console").Call("log", action.JSValue())
+
+	}
+
+	// c.characterMesh.Pose()
+
 }
 
 // Mount is ...
@@ -183,7 +363,7 @@ func (c *Top) initSceneAndRenderer() {
 			near   = 0.1
 			far    = 2000
 		)
-		camera := cameras.NewPerspectiveCamera(fov, aspect, near, far)
+		camera := camera.NewPerspectiveCamera(fov, aspect, near, far)
 		camera.Position().SetY(10)
 		camera.Position().SetZ(50)
 		camera.Up().SetZ(1)
@@ -205,7 +385,7 @@ func (c *Top) initSceneAndRenderer() {
 
 	// Control
 	{
-		control := controls.NewOrbitControls(c.camera, c.renderer.DomElement())
+		control := control.NewOrbitControls(c.camera, c.renderer.DomElement())
 		control.Target().Set2(0, 15, 0)
 		control.SetEnablePan(false)
 		control.SetMaxDistance(60)
@@ -220,45 +400,45 @@ func (c *Top) initSceneAndRenderer() {
 
 	// Sky Dome
 	{
-		// sky := sky.NewSky()
-		// sky.Scale().SetScalar(1000)
+		sky := sky.NewSky()
+		sky.Scale().SetScalar(1000)
 
-		// sky.SetTurbidity(12.7)
-		// sky.SetRayleigh(0.1)
-		// sky.SetMieCoefficient(0)
-		// sky.SetMieDirectionalG(0.3)
-		// sky.SetInclination(0)
-		// sky.SetAzimuth(0.2)
+		sky.SetTurbidity(12.7)
+		sky.SetRayleigh(0.1)
+		sky.SetMieCoefficient(0)
+		sky.SetMieDirectionalG(0.3)
+		sky.SetInclination(0)
+		sky.SetAzimuth(0.2)
 
-		// c.scene.Add(sky)
+		c.scene.Add(sky)
 	}
 
 	// Ocean
 	{
 		// Normal Texture
-		// loader := loaders.NewTextureLoader()
-		// tx := loader.LoadSimply("./assets/threejs/ex/textures/water/Water_1_M_Normal.jpg")
-		// tx.SetWrapS(threejs.RepeatWrapping)
-		// tx.SetWrapT(threejs.RepeatWrapping)
+		loader := texture.NewLoader()
+		tx := loader.LoadSimply("./assets/threejs/ex/textures/water/Water_1_M_Normal.jpg")
+		tx.SetWrapS(threejs.RepeatWrapping)
+		tx.SetWrapT(threejs.RepeatWrapping)
 
-		// ocean := water.NewOcean(
-		// 	1000,
-		// 	1000,
-		// 	water.TextureSize(512, 512),
-		// 	water.NormalizeTexture(tx),
-		// 	water.Alpha(1.0),
-		// 	water.DistortionScale(3.7),
-		// 	water.SunColor(threejs.NewColorFromColorValue(0xffffff)),
-		// 	water.OceanColor(threejs.NewColorFromColorValue(0x001e0f)),
-		// 	water.Fog(false),
-		// )
-		// ocean.SetSize(1.0)
+		ocean := water.NewOcean(
+			1000,
+			1000,
+			water.TextureSize(512, 512),
+			water.NormalizeTexture(tx),
+			water.Alpha(1.0),
+			water.DistortionScale(3.7),
+			water.SunColor(threejs.NewColorFromColorValue(0xffffff)),
+			water.OceanColor(threejs.NewColorFromColorValue(0x001e0f)),
+			water.Fog(false),
+		)
+		ocean.SetSize(1.0)
 
-		// ocean.Rotation().SetX(-math.Pi / 2)
-		// ocean.Position().SetY(1)
+		ocean.Rotation().SetX(-math.Pi / 2)
+		ocean.Position().SetY(1)
 
-		// c.ocean = ocean
-		// c.scene.Add(ocean)
+		c.ocean = ocean
+		c.scene.Add(ocean)
 	}
 
 	// Water Ball
@@ -288,7 +468,7 @@ func (c *Top) initSceneAndRenderer() {
 			groundColor    = threejs.ColorValue(0xb97a20)
 			lightIntensity = threejs.LightIntensity(4)
 		)
-		light := lights.NewHemisphereLight(skyColor, groundColor, lightIntensity)
+		light := light.NewHemisphereLight(skyColor, groundColor, lightIntensity)
 
 		c.scene.AddLight(light)
 	}
@@ -314,7 +494,7 @@ func (c *Top) initSceneAndRenderer() {
 		// c.scene.AddLight(light)
 		// c.scene.Add(light.Target())
 
-		// cameraHelper := cameras.NewCameraHelper(light.Shadow().Camera())
+		// cameraHelper := camera.NewCameraHelper(light.Shadow().Camera())
 		// scene.Add(cameraHelper)
 
 		// helper := lights.NewDirectionalLightHelper(light)
@@ -348,8 +528,6 @@ func (c *Top) resizeRendererToDisplaySize(renderer threejs.Renderer) (sizeChange
 		c.canvasWidth = int(clientWidth)
 		c.canvasHeight = int(clientHeight)
 
-		// log.Printf("w: %v, h: %v, cw: %v, ch: %v, pr: %v", w, h, clientWidth, clientHeight, pixelRatio)
-
 		return true
 	}
 
@@ -362,8 +540,8 @@ func (c *Top) render(this js.Value, args []js.Value) interface{} {
 		canvas := c.renderer.DomElement()
 		clientWidth := canvas.Get("clientWidth").Float()
 		clientHeight := canvas.Get("clientHeight").Float()
-		c.camera.(cameras.PerspectiveCamera).SetAspect(clientWidth / clientHeight)
-		c.camera.(cameras.PerspectiveCamera).UpdateProjectionMatrix()
+		c.camera.(camera.PerspectiveCamera).SetAspect(clientWidth / clientHeight)
+		c.camera.(camera.PerspectiveCamera).UpdateProjectionMatrix()
 	}
 
 	// Update Matrix
@@ -372,7 +550,7 @@ func (c *Top) render(this js.Value, args []js.Value) interface{} {
 	// Update time and animation
 	delta := c.clock.Delta()
 	c.animator.Update(delta)
-	// c.ocean.SetTime(c.ocean.Time() + delta)
+	c.ocean.SetTime(c.ocean.Time() + delta)
 
 	// Render
 	// c.effector.Render(c.scene, c.camera)
@@ -430,5 +608,11 @@ func (c *Top) resetCameraPosition(ev js.Value) {
 func (c *Top) disposeModelEvent(ev js.Value) {
 
 	c.DisposeModel()
+
+}
+
+func (c *Top) resetPoseEvent(ev js.Value) {
+
+	dispatcher.Dispatch(actions.ResetPose)
 
 }

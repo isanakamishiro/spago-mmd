@@ -29,13 +29,13 @@ type bufferGeometryImpl struct {
 
 // NewBufferGeometry creates a new BufferGeometry.
 func NewBufferGeometry() BufferGeometry {
-	return NewDefaultBufferGeometryFromJSValue(
-		GetJsObject("BufferGeometry").New(),
+	return NewBufferGeometryFromJSValue(
+		Threejs("BufferGeometry").New(),
 	)
 }
 
-// NewDefaultBufferGeometryFromJSValue creates a new BufferGeometry.
-func NewDefaultBufferGeometryFromJSValue(value js.Value) BufferGeometry {
+// NewBufferGeometryFromJSValue creates a new BufferGeometry.
+func NewBufferGeometryFromJSValue(value js.Value) BufferGeometry {
 	return &bufferGeometryImpl{
 		Value: value,
 	}

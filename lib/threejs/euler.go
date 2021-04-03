@@ -16,7 +16,7 @@ type Euler struct {
 // z - (optional) the angle of the z axis in radians. Default is 0.
 // order - (optional) a string representing the order that the rotations are applied, defaults to 'XYZ' (must be upper case).
 func NewEuler(x float64, y float64, z float64, order string) *Euler {
-	return &Euler{Value: GetJsObject("Euler").New(x, y, z, order)}
+	return &Euler{Value: Threejs("Euler").New(x, y, z, order)}
 }
 
 // JSValue is ...

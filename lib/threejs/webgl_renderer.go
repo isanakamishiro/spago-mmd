@@ -68,7 +68,7 @@ type webGLRenderer struct {
 
 // NewWebGLRenderer is constructor for WebGLRenderer.
 func NewWebGLRenderer(parameters WebGLRendererParameters) Renderer {
-	return &webGLRenderer{Value: GetJsObject("WebGLRenderer").New(parameters)}
+	return &webGLRenderer{Value: Threejs("WebGLRenderer").New(parameters)}
 }
 
 // JSValue is ...

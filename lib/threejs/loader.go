@@ -51,7 +51,7 @@ func NewDefaultLoaderFromJSValue(v js.Value) Loader {
 func NewLoadingManager() LoadingManager {
 
 	c := &defaultLoadingManagerImp{
-		Value: GetJsObject("LoadingManager").New(),
+		Value: Threejs("LoadingManager").New(),
 	}
 
 	// 初期化時にすべてのコールバックを設定する

@@ -1,5 +1,7 @@
 package store
 
+import "app/lib/threejs/animation"
+
 // Motion is MMD Model animation number.
 type Motion int
 
@@ -12,21 +14,21 @@ const (
 	Dance3
 )
 
+var (
+	_motions = []string{
+		"",
+		"./assets/models/mmd/vmds/wavefile_v2.vmd",
+		"./assets/models/mmd/vmds/みんなみっくみくにしてあげる(Lat式).vmd",
+		"./assets/models/mmd/vmds/ダブルラリアット.vmd",
+	}
+)
+
 // CurrentMotion is ..
 var CurrentMotion Motion = Dance1
+var MotionDictionay map[Motion]animation.Clip = make(map[Motion]animation.Clip)
 
 // Path gets MMD motion file path.
 func (c Motion) Path() string {
 
-	switch c {
-	case Dance1:
-		return "./assets/models/mmd/vmds/wavefile_v2.vmd"
-	case Dance2:
-		return "./assets/models/mmd/vmds/ハッピーシンセサイザモーション.vmd"
-	case Dance3:
-		return "./assets/models/mmd/vmds/wavefile_v2.vmd"
-	default:
-		return ""
-	}
-
+	return _motions[c]
 }
